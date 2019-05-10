@@ -1,0 +1,28 @@
+#!/bin/sh
+
+startTag='<!-- menu start -->'
+endTag='<!-- menu end -->'
+
+startline=`grep "^${startTag}$" -n _sidebar.md | sed -e 's/:.*//g'`
+sed -i "/^${startTag}$/,/^${endTag}$/d" _sidebar.md
+
+if [ ! $startline ]; then
+    echo "メニューを生成出来ませんでした。下のタグが1つずつ必要です"
+    echo "    <!-- menu start -->"
+    echo "    <!-- menu end -->"
+    exit
+fi
+
+menu="${startTag}"
+
+for line in `find . -name "*.md"`; do
+    uri="${line%.*}"
+    link="- [${uri}](${uri})"
+    menu="${menu}\n${link}"
+done
+
+menu="${menu}\n${endTag}"
+
+sed -i "${startline}i ${menu}" _sidebar.md
+
+exec git add _sidebar.md
